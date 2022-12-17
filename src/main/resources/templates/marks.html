@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head">
+</head>
+<script src="https://use.fontawesome.com/c0c323679c.js"></script>
+<script>
+    var marksList = [];
+
+    $(document).ready(function () {
+        if (localStorage.getItem("userId") === "" || localStorage.getItem("userId") === null
+            || localStorage.getItem("userId") === undefined) {
+            window.location.replace("/");
+        } else {
+            $('#welcomeName').text("Welcome back, " + localStorage.getItem("firstName") + " " + localStorage.getItem("lastName"));
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/api/getMarks",
+            data: JSON.stringify({}),
+            contentType: 'application/json',
+            success: function (result) {
+                var res = JSON.stringify(result);
+                marksList = result;
+
+                $("#reserveTableData").empty();
+
+                var expenseData = "" +
+                    "<table class='table table-hover'>" +
+                    "<thead>" +
+                    "<tr>" +
+                    "<th scope='col'>Mark ID</th>" +
+                    "<th scope='col'>Department</th>" +
+                    "<th scope='col'>Student ID</th>" +
+                    "<th scope='col'>Marks</th>" +
+                    "<th scope='col'>Pass %</th>" +
+                    "<th scope='col'>Action</th>" +
+                    "</thead>" +
+                    "<tbody>";
+
+                for (var i in result) {
+                    expenseData = expenseData +
+                        "<tr>" +
+                        "<td><b>" + result[i].markID + "</b></td>" +
+                        "<td>" + result[i].department + "</td>" +
+                        "<td><b> " + result[i].studentID + "</b></td>" +
+                        "<td><b> " + result[i].mark + "</b></td>" +
+                        "<td><b> " + result[i].pass + "</b></td>" +
+                        "<td style='width: 50px'>   " +
+                        "<button style='font-size: 13px' type='button' id='viewStudent" + i + " + ' onclick='viewStudentName(" + i + ")' " +
+                        "class='btn btn-success' data-toggle='tooltip' data-placement='bottom' title='View Student Name'>" +
+                        "View Student Name" +
+                        "</button> " +
+                        "</td>" +
+                        "</tr>";
+                }
+
+
+                expenseData = expenseData + "</tbody></table>";
+                $("#reserveTableData").html(expenseData);
+            }, error: function (err) {
+            }
+        });
+    });
+
+    function viewStudentName(data) {
+        console.log(marksList[data]);
+
+        $("#viewStudentNameContent").empty();
+
+        var studentData = "";
+        studentData = "" +
+            "<h4>" + marksList[data].studentName + "</h4>";
+
+        $("#viewStudentNameContent").html(studentData);
+
+        $("#viewStudentNameModal").modal("show");
+
+    }
+
+</script>
+<body>
+
+<!--Navbar-->
+<nav th:replace="fragments/header :: nav"></nav>
+
+<div style="padding:25px;">
+    <div class="row">
+        <div class="col-9 mx-auto" style="width: 20rem; margin-top: 50px;padding:25px;">
+            <h3 id="welcomeName" style="font-family: cursive;font-size: 40px;"></h3>
+        </div>
+
+        <div id="reserveTableData" class="col-9 mx-auto" style="width: 20rem; margin-top: 50px;padding:25px;"></div>
+    </div>
+
+    <div class="modal" id="viewStudentNameModal" tabindex="-1" role="dialog" aria-labelledby="viewStudentNameModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 800px">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewCommentModalLabel">View Student Name</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="viewStudentNameContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/jsScripts :: scripts"></div>
+
+</body>
+</html>
